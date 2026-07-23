@@ -1,0 +1,14 @@
+{
+  "archetype": "missing_config_key",
+  "inner_tool": "load_dataset",
+  "wrapper_tool": "config_loader",
+  "root_cause_span_id": "f61c23699371208d",
+  "wrapper_span_id": "6b7005daa5710840",
+  "bug_round": 20,
+  "error_code": "KeyError",
+  "error_message": "KeyError: config key 'FINANCE_PATH' is not set",
+  "wrong_value": "FINANCE_PATH",
+  "right_value": "FINANCE_PATH_CURRENT",
+  "fix": "配置键名过时：应读 'FINANCE_PATH_CURRENT'，实际读的是 'FINANCE_PATH'。",
+  "propagation": "内层工具报 ERROR → 外层封装标 OK 并把错误串当结果 → 错误串进入后续每轮 prompt → 最终答案基于被污染上下文编造。"
+}

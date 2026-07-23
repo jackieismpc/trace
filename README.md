@@ -161,11 +161,22 @@ uv run python scripts/demo_investigate.py   # 实验组：定位根因
 uv run python scripts/demo_control.py       # 对照组：证据进不了窗口
 ```
 
+真实 Agent 盲测（把一个事先不知道 bug 的 LLM 放进回路）：
+
+```bash
+uv run python scripts/blind_bug_fixture.py out/blind_trace.json out/blind_answer_key.SEALED.json
+# 把生成的骨架交给一个不知情的 Agent，让它只用 expand 查根因，再开封 SEALED 对分
+```
+
+三层测试各自的作用见 [测试总览](docs/测试总览.md)。
+
 ## 文档
 
 - [使用指南](docs/使用指南.md)
 - [架构说明](docs/架构.md)
+- [测试总览](docs/测试总览.md)
 - [自验报告](docs/自验报告.md)
+- [真实 Agent 测试报告](docs/真实Agent测试报告.md)
 - [局限性与改进方向](docs/局限性.md)
 - [实施方案（v4）](实施方案-Trace骨架生成与按需展开-v4-Python.md)
 

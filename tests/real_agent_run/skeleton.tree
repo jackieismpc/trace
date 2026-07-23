@@ -1,0 +1,113 @@
+trace 9d1e4c8b  status=ERROR  spans=411→29  dur=48.2s
+└─ a453e2 AGENT     research_agent                    OK   48.2s  in=76     out=44
+   ├─ 40928b MODEL     gpt-4o                            OK    2.1s  in=370    out=161     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 210→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 40928b --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 8ef5db MODEL     gpt-4o                            OK    2.1s  in=957    out=161     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 491→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 8ef5db --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 5a68e4 MODEL     gpt-4o                            OK    2.1s  in=1.4K   out=162     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 772→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 5a68e4 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 3602eb MODEL     gpt-4o                            OK    2.1s  in=1.8K   out=162     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 1053→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 3602eb --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 568004 MODEL     gpt-4o                            OK    2.1s  in=2.4K   out=162     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 1334→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 568004 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ ae3bf8 MODEL     gpt-4o                            OK    2.1s  in=2.9K   out=162     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 1615→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id ae3bf8 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 55a90f MODEL     gpt-4o                            OK    2.1s  in=3.3K   out=162     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 1896→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 55a90f --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 903381 MODEL     gpt-4o                            OK    2.1s  in=3.7K   out=162     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 2177→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 903381 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 3f5b54 MODEL     gpt-4o                            OK    2.1s  in=4.1K   out=162     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 2458→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 3f5b54 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ c1092e MODEL     gpt-4o                            OK    2.1s  in=4.6K   out=163     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 2739→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id c1092e --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 695ce2 MODEL     gpt-4o                            OK    2.1s  in=5.0K   out=163     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 3021→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 695ce2 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 31919e MODEL     gpt-4o                            OK    2.1s  in=5.4K   out=163     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 3303→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 31919e --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 09cb15 MODEL     gpt-4o                            OK    2.1s  in=5.9K   out=163     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 3585→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 09cb15 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 5fc2ac MODEL     gpt-4o                            OK    2.1s  in=6.4K   out=163     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 3867→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 5fc2ac --field '$.attributes["mlflow.spanInputs"]'
+   ├─ f93256 MODEL     gpt-4o                            OK    2.1s  in=7.0K   out=163     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 4149→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id f93256 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 589952 MODEL     gpt-4o                            OK    2.1s  in=7.5K   out=164     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 4431→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 589952 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 1d7836 MODEL     gpt-4o                            OK    2.1s  in=8.0K   out=164     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 4713→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 1d7836 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 5dd6df MODEL     gpt-4o                            OK    2.1s  in=8.4K   out=164     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 4995→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 5dd6df --field '$.attributes["mlflow.spanInputs"]'
+   ├─ 61847b MODEL     gpt-4o                            OK    2.1s  in=9.0K   out=164     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 5277→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 61847b --field '$.attributes["mlflow.spanInputs"]'
+   ├─ b0e11f CHAIN     turn_20                           OK    3.5s  in=17     out=17
+   │  ├─ 037608 MODEL     gpt-4o                            OK    2.1s  in=9.3K   out=164     ✂
+   │  │     ✂ $.attributes["mlflow.spanInputs"] 5559→160 chars, head
+   │  │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │  │       expand: tracelens expand --span-id 037608 --field '$.attributes["mlflow.spanInputs"]'
+   │  ├─ f61c23 TOOL      load_dataset                   ERROR   200ms  in=65     out=89
+   │  │  └─ error: KeyError: config key 'FINANCE_PATH' is not set
+   │  ├─ 6b7005 TOOL      config_loader                     OK   210ms  in=68     out=66
+   │  └─ ⋯ elided 14 similar TOOL spans (all OK)
+   ├─ 376f77 MODEL     gpt-4o                            OK    2.1s  in=9.5K   out=164     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 5688→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id 376f77 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ e64a06 MODEL     gpt-4o                            OK    2.1s  in=10.2K  out=164     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 5970→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id e64a06 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ d90c24 MODEL     gpt-4o                            OK    2.1s  in=10.7K  out=164     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 6252→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id d90c24 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ d999f2 MODEL     gpt-4o                            OK    2.1s  in=11.1K  out=164     ✂ ⋯1层
+   │     ✂ $.attributes["mlflow.spanInputs"] 6534→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id d999f2 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ a727c0 MODEL     final_answer                      OK    4.8s  in=11.5K  out=145     ✂
+   │     ✂ $.attributes["mlflow.spanInputs"] 6773→160 chars, head
+   │       "{\"messages\": [{\"role\": \"user\", \"content\": \"[system] 你是一个数据分析助手。必须严格依据工具返回的数据回答，不得编造。若工具返回错误，必须如实说明错误，不得把错误信息当作数据继续推理。\\n[user] 2025 年 Q3 的营收是多少？按业务线拆分…
+   │       expand: tracelens expand --span-id a727c0 --field '$.attributes["mlflow.spanInputs"]'
+   ├─ ⋯ elided 23 similar CHAIN spans (all OK)
+   └─ ⋯ elided 345 similar TOOL spans (all OK)
+
+图例：✂ 字段被截断（可 expand 取回）  ⚠ 类型为启发式推断，不要当事实用  ⋯ 此处折叠了同类节点
+来源：out/blind_trace.json（3.8M）
+token 估算：3699 / 预算 4000（方法：estimate(chars/token=4.0,CJK=1.5)）
