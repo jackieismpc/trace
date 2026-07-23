@@ -227,6 +227,17 @@ class Skeleton:
     notes: list[str] = field(default_factory=list)
     """渲染时附在末尾的说明（如 token 估算方法、预算收紧过程）。"""
 
+    detail: int = 2
+    """展示详细度，由 ``--max-tokens`` 的预算收紧循环调节：
+
+        2 完整——截断字段显示保留下来的预览与可执行的 expand 命令
+        1 紧凑——只显示一行截断标记（字段路径 + 原始/保留长度）
+        0 最简——只在节点行留一个 ``✂``，取回方式见骨架末尾的图例
+
+    降低详细度只影响**展示**，不影响可取回性：``span_id`` 与字段路径始终在骨架里，
+    ``tracelens expand --span-id <id> --field <path>`` 永远有效。
+    """
+
     def all_nodes(self) -> list[SpanNode]:
         out: list[SpanNode] = []
         for r in self.roots:

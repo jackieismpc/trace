@@ -1,0 +1,104 @@
+# serializer version: 1
+# name: test_json_snapshot
+  '''
+  {
+    "schema_version": 1,
+    "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+    "status": "ERROR",
+    "duration_ns": 5300000000,
+    "original_span_count": 4,
+    "kept_span_count": 4,
+    "source_file": "tests/fixtures/mlflow_simple.json",
+    "source_size": 2982,
+    "notes": [],
+    "roots": [
+      {
+        "span_id": "a3f2c1d4e5b60789",
+        "name": "research_agent",
+        "kind": "AGENT",
+        "kind_source": "Explicit",
+        "status": "OK",
+        "duration_ns": 5300000000,
+        "input_bytes": 52,
+        "output_bytes": 62,
+        "children": [
+          {
+            "span_id": "b4e1d2c3a4958677",
+            "name": "gpt-4o",
+            "kind": "MODEL",
+            "kind_source": "Explicit",
+            "status": "OK",
+            "duration_ns": 2100000000,
+            "input_bytes": 279,
+            "output_bytes": 113
+          },
+          {
+            "span_id": "d6a3f47788990011",
+            "name": "sql_query",
+            "kind": "TOOL",
+            "kind_source": "Explicit",
+            "status": "ERROR",
+            "duration_ns": 200000000,
+            "input_bytes": 51,
+            "output_bytes": 143,
+            "status_message": "relation \"revenue_q3\" does not exist",
+            "children": [
+              {
+                "span_id": "e7b4a52233445566",
+                "name": "unnamed_step",
+                "kind": "UNKNOWN",
+                "kind_source": "Unknown",
+                "status": "OK",
+                "duration_ns": 100000000,
+                "input_bytes": 12,
+                "output_bytes": 12
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  '''
+# ---
+# name: test_md_snapshot
+  '''
+  # Trace 骨架 `4bf92f3577b3`
+  
+  - 整体状态：**ERROR**
+  - 总耗时：5.3s
+  - span 数：4 → **4** 个存活节点
+  - 来源文件：`tests/fixtures/mlflow_simple.json`（2.9K）
+  
+  ## 调用树
+  
+  | span | 类型 | 类型来源 | 名称 | 状态 | 耗时 | 标记 |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | `a3f2c1d4` | AGENT | Explicit | research_agent | OK | 5.3s | — |
+  | &nbsp;&nbsp;&nbsp;&nbsp;`b4e1d2c3` | MODEL | Explicit | gpt-4o | OK | 2.1s | — |
+  | &nbsp;&nbsp;&nbsp;&nbsp;`d6a3f477` | TOOL | Explicit | sql_query | ❌ ERROR | 200ms | — |
+  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`e7b4a522` | UNKNOWN | Unknown | unnamed_step | OK | 100ms | — |
+  
+  ## 错误节点
+  
+  ### `d6a3f477` sql_query
+  
+  ```
+  relation "revenue_q3" does not exist
+  ```
+  
+  '''
+# ---
+# name: test_tree_snapshot
+  '''
+  trace 4bf92f35  status=ERROR  spans=4→4  dur=5.3s
+  └─ a3f2c1 AGENT     research_agent                    OK    5.3s  in=52     out=62
+     ├─ b4e1d2 MODEL     gpt-4o                            OK    2.1s  in=279    out=113
+     └─ d6a3f4 TOOL      sql_query                      ERROR   200ms  in=51     out=143
+        └─ error: relation "revenue_q3" does not exist
+        └─ e7b4a5 UNKNOWN   unnamed_step                      OK   100ms  in=12     out=12
+  
+  图例：✂ 字段被截断（可 expand 取回）  ⚠ 类型为启发式推断，不要当事实用  ⋯ 此处折叠了同类节点
+  来源：tests/fixtures/mlflow_simple.json（2.9K）
+  '''
+# ---
