@@ -237,7 +237,7 @@ def main() -> int:
     n_spans = len(doc["data"]["spans"])  # type: ignore[index]
 
     WINDOW_TOKENS = 128_000
-    window_bytes = WINDOW_TOKENS * 4  # 粗略 4 字节/token（与自验报告一致口径）
+    window_bytes = WINDOW_TOKENS * 4  # 粗略 4 字节/token（与验证报告一致口径）
     inside = "窗口内" if offset <= window_bytes else "窗口外"
 
     print(f"span 总数            : {n_spans}")

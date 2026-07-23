@@ -13,7 +13,7 @@
     uv run python scripts/bench_pipeline.py [目标体积MB]   # 默认 200 MB
 
 1 GB 全量跑一次约需数分钟与 1 GB 磁盘，CI 里跑缩小版即可；正式验收数据用
-`--size 1024` 单独跑并记入自验报告。
+`--size 1024` 单独跑并记入验证报告。
 """
 
 from __future__ import annotations

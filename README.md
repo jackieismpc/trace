@@ -11,7 +11,7 @@
 **信息密度最高的部分体积最小**，所以该做的是把「高密度低体积」和「低密度高体积」
 两部分物理分离，而不是有损压缩。
 
-实测（[自验报告](docs/自验报告.md)）：一份 3.8 MB / 411 span 的 Trace，骨架
+实测（[验证报告](docs/验证报告.md)）：一份 3.8 MB / 411 span 的 Trace，骨架
 16 KB（原文件的 0.41%、128K 窗口的 2.9%），全过程定位根因消耗约 3,963 token；
 同一份 Trace 直接截断喂给模型，窗口只装得下 13.9%，且唯一的错误证据落在窗口之外。
 
@@ -149,34 +149,38 @@ uv run pytest                                   # 190 项测试
 uv run pytest --cov --cov-report=term-missing   # 覆盖率（当前 92%）
 uv run ruff check . && uv run ruff format --check .
 uv run mypy                                     # strict 模式
-uv run python scripts/bench_scanner.py          # 扫描器吞吐（验收线 200 MB/s）
-uv run python scripts/bench_pipeline.py 200     # 全流程基准
 ```
 
-复现自验报告：
+## 测试
+
+三层测试，各自回答一个问题（详见[验证报告](docs/验证报告.md)）：
+
+1. **单元 / 属性 / 快照**（`tests/`，190 项 / 92% 覆盖）——每个模块行为对不对。核心是
+   `test_topology.py` 用 hypothesis 钉死五条拓扑不变量、`test_index.py` 闭环验证字节级一致、
+   `test_cli.py` 锁定退出码语义。
+2. **脚本 demo / 基准**（`scripts/`）——端到端可达性与性能。
+   `demo_investigate.py` / `demo_control.py` 是不调 LLM 的实验/对照组；`bench_pipeline.py`
+   跑全流程性能。
+3. **真实 Agent 盲测**——把一个事先不知道 bug 的 LLM 放进回路，验证它只凭骨架 + `expand`
+   能否查出根因（对照组：把原始 JSON 截断进 128K 窗口）。
 
 ```bash
+# 信息可达性自验（不调 LLM）
 uv run python scripts/make_demo_fixture.py out/demo_trace.json
 uv run python scripts/demo_investigate.py   # 实验组：定位根因
 uv run python scripts/demo_control.py       # 对照组：证据进不了窗口
-```
+uv run python scripts/bench_pipeline.py 200 # 全流程基准
 
-真实 Agent 盲测（把一个事先不知道 bug 的 LLM 放进回路）：
-
-```bash
+# 真实 Agent 盲测（根因随机且密封，每次运行都不同）
 uv run python scripts/blind_bug_fixture.py out/blind_trace.json out/blind_answer_key.SEALED.json
 # 把生成的骨架交给一个不知情的 Agent，让它只用 expand 查根因，再开封 SEALED 对分
 ```
-
-三层测试各自的作用见 [测试总览](docs/测试总览.md)。
 
 ## 文档
 
 - [使用指南](docs/使用指南.md)
 - [架构说明](docs/架构.md)
-- [测试总览](docs/测试总览.md)
-- [自验报告](docs/自验报告.md)
-- [真实 Agent 测试报告](docs/真实Agent测试报告.md)
+- [验证报告](docs/验证报告.md)（信息可达性自验 + 真实 Agent 盲测 + 性能 + 质量）
 - [局限性与改进方向](docs/局限性.md)
 - [实施方案（v4）](实施方案-Trace骨架生成与按需展开-v4-Python.md)
 
