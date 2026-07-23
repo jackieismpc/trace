@@ -1,0 +1,80 @@
+{
+  "info": {
+    "request_id": "tr-0001",
+    "trace_id": "0x4bf92f3577b34da6a3ce929d0e0e4736",
+    "execution_time_ms": 5300,
+    "status": "ERROR"
+  },
+  "data": {
+    "spans": [
+      {
+        "name": "research_agent",
+        "context": {
+          "trace_id": "0x4bf92f3577b34da6a3ce929d0e0e4736",
+          "span_id": "0xa3f2c1d4e5b60789"
+        },
+        "parent_id": null,
+        "start_time": 1700000000000000000,
+        "end_time": 1700000005300000000,
+        "status_code": "OK",
+        "status_message": "",
+        "attributes": {
+          "mlflow.spanType": "\"AGENT\"",
+          "mlflow.spanInputs": "{\"question\": \"2025 年 Q3 营收是多少？\"}",
+          "mlflow.spanOutputs": "{\"answer\": \"抱歉，暂时无法获取营收数据。\"}"
+        }
+      },
+      {
+        "name": "gpt-4o",
+        "context": {
+          "trace_id": "0x4bf92f3577b34da6a3ce929d0e0e4736",
+          "span_id": "0xb4e1d2c3a4958677"
+        },
+        "parent_id": "0xa3f2c1d4e5b60789",
+        "start_time": 1700000000100000000,
+        "end_time": 1700000002200000000,
+        "status_code": "OK",
+        "status_message": "",
+        "attributes": {
+          "mlflow.spanType": "\"LLM\"",
+          "gen_ai.request.model": "\"gpt-4o\"",
+          "mlflow.spanInputs": "{\"messages\": [{\"role\": \"system\", \"content\": \"你是一个数据分析助手，需要严格依据工具返回的数据回答问题，不得编造。若工具返回错误，必须如实说明。\"}, {\"role\": \"user\", \"content\": \"2025 年 Q3 营收是多少？\"}]}",
+          "mlflow.spanOutputs": "{\"tool_calls\": [{\"name\": \"sql_query\", \"arguments\": {\"sql\": \"SELECT SUM(amount) FROM revenue_q3\"}}]}"
+        }
+      },
+      {
+        "name": "sql_query",
+        "context": {
+          "trace_id": "0x4bf92f3577b34da6a3ce929d0e0e4736",
+          "span_id": "0xd6a3f47788990011"
+        },
+        "parent_id": "0xa3f2c1d4e5b60789",
+        "start_time": 1700000002300000000,
+        "end_time": 1700000002500000000,
+        "status_code": "ERROR",
+        "status_message": "relation \"revenue_q3\" does not exist",
+        "attributes": {
+          "mlflow.spanType": "\"TOOL\"",
+          "mlflow.spanInputs": "{\"sql\": \"SELECT SUM(amount) FROM revenue_q3\"}",
+          "mlflow.spanOutputs": "{\"error\": \"relation \\\"revenue_q3\\\" does not exist\", \"note\": \"字符串里带 { } [ ] 这些结构字符，用于验证扫描器\"}"
+        }
+      },
+      {
+        "name": "unnamed_step",
+        "context": {
+          "trace_id": "0x4bf92f3577b34da6a3ce929d0e0e4736",
+          "span_id": "0xe7b4a52233445566"
+        },
+        "parent_id": "0xd6a3f47788990011",
+        "start_time": 1700000002600000000,
+        "end_time": 1700000002700000000,
+        "status_code": "OK",
+        "status_message": "",
+        "attributes": {
+          "mlflow.spanInputs": "{\"x\": 1}",
+          "mlflow.spanOutputs": "{\"y\": 2}"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+# Python 生成物
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# 虚拟环境
+.venv
+
+# 工具与编辑器本地配置
+.claude/
+.vscode/
+.idea/
+.DS_Store
+
+# 测试与类型检查缓存
+.pytest_cache/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# 运行产物（骨架、索引、自验中间数据）
+*.idx
+/out/
+/tmp/

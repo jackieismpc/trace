@@ -1,0 +1,40 @@
+# CI 骨架：lint → 类型检查 → 单元测试 → 扫描器吞吐基准
+#
+# 说明：目标发行版是 openEuler，正式落地时把 runner 换成 openEuler 容器镜像，
+# 并补上 x86_64 / aarch64 双架构矩阵（方案 4.5）。这里先用通用 runner 保证
+# 每次提交都跑得起来。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: 同步依赖
+        run: uv sync --dev --python ${{ matrix.python-version }}
+
+      - name: Lint（ruff）
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: 类型检查（mypy 严格模式）
+        run: uv run mypy
+
+      - name: 单元测试与覆盖率
+        run: uv run pytest --cov --cov-report=term-missing --cov-fail-under=85
+
+      - name: 扫描器吞吐基准（验收线 200 MB/s）
+        run: uv run python scripts/bench_scanner.py 100
