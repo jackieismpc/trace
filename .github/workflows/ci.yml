@@ -1,8 +1,8 @@
-# CI 骨架：lint → 类型检查 → 单元测试 → 扫描器吞吐基准
+# CI：lint → 类型检查 → 单元测试与覆盖率 → 性能基准 → 打包 → 自验闭环
 #
-# 说明：目标发行版是 openEuler，正式落地时把 runner 换成 openEuler 容器镜像，
-# 并补上 x86_64 / aarch64 双架构矩阵（方案 4.5）。这里先用通用 runner 保证
-# 每次提交都跑得起来。
+# 说明：目标发行版是 openEuler。迁进社区大仓时把 runner 换成 openEuler 容器镜像，
+# 并补上 x86_64 / aarch64 双架构矩阵（方案 4.5）——Python 无需交叉编译，
+# 矩阵只为验证两种架构的运行时行为一致。这里先用通用 runner 保证每次提交都跑得起来。
 name: CI
 
 on:
@@ -38,3 +38,62 @@ jobs:
 
       - name: 扫描器吞吐基准（验收线 200 MB/s）
         run: uv run python scripts/bench_scanner.py 100
+
+      - name: 全流程基准（三条指标）
+        run: uv run python scripts/bench_pipeline.py 100
+
+  demo:
+    # 自验报告里的每个数字都来自这几个脚本，它们必须始终跑得通
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --dev
+
+      - name: 生成 demo Trace
+        run: uv run python scripts/make_demo_fixture.py out/demo_trace.json
+
+      - name: 实验组——定位根因
+        run: uv run python scripts/demo_investigate.py
+
+      - name: 对照组——证据进不了窗口
+        run: uv run python scripts/demo_control.py
+
+      - name: 全链路手工走查（skeleton → expand，逐字节比对）
+        run: |
+          uv run tracelens inspect --input out/demo_trace.json
+          uv run tracelens skeleton --input out/demo_trace.json \
+              --config examples/demo_rules.toml \
+              --out out/skeleton.txt --emit-index out/demo.idx
+          SPAN=$(uv run python -c "
+          import json,sys
+          doc=json.load(open('out/demo_trace.json'))
+          s=[x for x in doc['data']['spans'] if x['status_code']=='ERROR'][0]
+          print(s['context']['span_id'])")
+          uv run tracelens expand --input out/demo_trace.json --index out/demo.idx \
+              --span-id "$SPAN" --raw > out/span.json
+          # 取回的字节必须能在原文件里原样找到
+          uv run python -c "
+          raw=open('out/span.json','rb').read()
+          assert raw in open('out/demo_trace.json','rb').read(), '字节级一致性被破坏'
+          print('字节级一致性校验通过：', len(raw), '字节')"
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+
+      - name: 构建 wheel 与 sdist
+        run: uv build
+
+      - name: 在干净环境里安装并冒烟测试
+        run: |
+          uv tool install dist/*.whl
+          tracelens --version
+          tracelens --help
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/

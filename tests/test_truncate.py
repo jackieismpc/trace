@@ -141,8 +141,8 @@ def test_field_globs_select_subset() -> None:
     node = _node()
     buf = b'"' + b"y" * 400 + b'"'
     fields = [
-        PayloadField(path="$.attributes['mlflow.spanInputs']", start=0, end=len(buf)),
-        PayloadField(path="$.attributes['mlflow.spanOutputs']", start=0, end=len(buf)),
+        PayloadField(path='$.attributes["mlflow.spanInputs"]', start=0, end=len(buf)),
+        PayloadField(path='$.attributes["mlflow.spanOutputs"]', start=0, end=len(buf)),
     ]
     marks = apply_truncation(
         node=node,
@@ -151,7 +151,7 @@ def test_field_globs_select_subset() -> None:
         max_chars=50,
         field_globs=["*spanOutputs*"],
     )
-    assert [m.field_path for m in marks] == ["$.attributes['mlflow.spanOutputs']"]
+    assert [m.field_path for m in marks] == ['$.attributes["mlflow.spanOutputs"]']
 
 
 def test_digest_is_stable_and_distinct() -> None:
@@ -183,7 +183,7 @@ def test_truncation_on_real_fixture() -> None:
     llm = next(n for n in skeleton.all_nodes() if n.meta.name == "gpt-4o")
     assert llm.truncated_fields, "大 prompt 应该被截断"
     paths = {m.field_path for m in llm.truncated_fields}
-    assert "$.attributes['mlflow.spanInputs']" in paths
+    assert '$.attributes["mlflow.spanInputs"]' in paths
     # 原文件从不被修改
     assert (FIXTURES / "mlflow_simple.json").read_bytes().count(b"revenue_q3") >= 1
 

@@ -1,0 +1,50 @@
+# 自验 demo 用的规则集——比 examples/rules.toml 更激进，用于演示大 Trace 的剪枝效果。
+#
+#   tracelens skeleton --input out/demo_trace.json --config examples/demo_rules.toml
+#
+# 场景：一次 24 轮的 Agent 执行，361 个 web_search 工具调用贡献了绝大部分体积，
+# 而它们对排查这次故障毫无价值。规则把它们折叠掉，把预算留给拓扑与异常点。
+#
+# 硬保护始终生效：根节点、以及 ERROR 节点到根的整条路径永远不会被剪掉，
+# 所以「把 web_search 全折叠」不会连带把出错的那条链一起折没。
+
+# 1）错误节点保留全文——排查从这里开始。
+[[rules]]
+name = "错误节点保留全文"
+action = "keep"
+priority = 100
+match = { status = "ERROR" }
+
+# 2）成功的检索类工具调用整体折叠。它们会变成
+#    “⋯ elided N similar TOOL spans (all OK)” 占位节点，
+#    节点数守恒，需要时仍可凭 span_id 展开。
+[[rules]]
+name = "折叠成功的检索工具调用"
+action = "drop"
+priority = 60
+match = { name_glob = "web_search", status = "OK" }
+
+# 3）中间的编排层（每轮一个 CHAIN）在骨架上没有信息量，删掉。
+#    它们的子节点会重挂到根上并标记 “⋯1层”，因果关系不会丢。
+[[rules]]
+name = "压平每轮的编排层"
+action = "drop"
+priority = 50
+match = { kind = "CHAIN", status = "OK" }
+
+# 4）模型调用是体积主力（每轮都带全量历史），但拓扑与轮次必须留着，
+#    所以保留节点、只截断内容。系统指令在开头，用 head 策略。
+[[rules]]
+name = "模型调用截断输入输出"
+action = "truncate"
+priority = 40
+match = { kind = "MODEL" }
+params = { strategy = "head", max_chars = 160 }
+
+# 5）兜底：其余大体积节点两端保留。
+[[rules]]
+name = "其余大体积节点两端保留"
+action = "truncate"
+priority = 10
+match = { min_bytes = 2048 }
+params = { strategy = "head_tail", max_chars = 160 }

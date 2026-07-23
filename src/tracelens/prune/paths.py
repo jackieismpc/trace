@@ -72,7 +72,7 @@ def format_path(segments: list[str | int]) -> str:
         if isinstance(seg, int):
             out.append(f"[{seg}]")
         elif any(ch in seg for ch in ".[]'\""):
-            out.append(f"['{seg}']")
+            out.append(f'["{seg}"]')
         else:
             out.append(f".{seg}")
     return "".join(out)

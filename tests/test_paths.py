@@ -19,7 +19,7 @@ from tracelens.prune.paths import format_path, parse_path, resolve_path
         ("$.a.b.c", ["a", "b", "c"]),
         ("$.a[0]", ["a", 0]),
         ("$.a[0].b[12]", ["a", 0, "b", 12]),
-        ("$.attributes['mlflow.spanInputs']", ["attributes", "mlflow.spanInputs"]),
+        ('$.attributes["mlflow.spanInputs"]', ["attributes", "mlflow.spanInputs"]),
         ('$.attributes["gen_ai.prompt"]', ["attributes", "gen_ai.prompt"]),
     ],
 )
@@ -34,7 +34,7 @@ def test_parse_path_rejects_garbage(path: str) -> None:
 
 
 def test_format_path_round_trip() -> None:
-    for path in ("$.a.b", "$.a[0]", "$.attributes['mlflow.spanInputs']"):
+    for path in ("$.a.b", "$.a[0]", '$.attributes["mlflow.spanInputs"]'):
         assert format_path(parse_path(path)) == path
 
 
@@ -50,7 +50,7 @@ def test_resolve_returns_original_bytes() -> None:
 
 def test_resolve_dotted_key() -> None:
     raw = b'{"attributes": {"mlflow.spanInputs": "{\\"q\\": 1}"}}'
-    start, end = resolve_path(raw, 0, "$.attributes['mlflow.spanInputs']")
+    start, end = resolve_path(raw, 0, '$.attributes["mlflow.spanInputs"]')
     assert raw[start:end] == b'"{\\"q\\": 1}"'
 
 

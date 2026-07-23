@@ -168,7 +168,7 @@ def test_expand_field(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> Non
                 "--span-id",
                 "000000000000000a",
                 "--field",
-                "$.attributes['mlflow.spanOutputs']",
+                '$.attributes["mlflow.spanOutputs"]',
             ]
         )
         == 0

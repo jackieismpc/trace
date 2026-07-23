@@ -121,8 +121,8 @@ def test_payload_fields_locate_big_values() -> None:
         doc = reader.read()
         llm = next(s for s in doc.spans if s.name == "gpt-4o")
         fields = {f.path: f for f in reader.payload_fields(llm)}
-        assert "$.attributes['mlflow.spanInputs']" in fields
-        target = fields["$.attributes['mlflow.spanInputs']"]
+        assert '$.attributes["mlflow.spanInputs"]' in fields
+        target = fields['$.attributes["mlflow.spanInputs"]']
         # 返回的是原始字节区间，切出来仍是原文
         assert reader.slice(target.start, target.end).startswith(b'"{')
 

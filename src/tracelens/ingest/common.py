@@ -71,9 +71,12 @@ def as_int(value: Any, default: int = 0) -> int:
 def quote_segment(key: str) -> str:
     """把 attribute key 拼进点路径。
 
-    key 里含点号（``mlflow.spanInputs``）时用方括号加引号形式，
+    key 里含点号（``mlflow.spanInputs``）时用方括号加**双引号**形式，
     否则用普通点号形式，保证路径可被 `prune.paths` 无歧义解析。
+
+    用双引号而不是单引号是为了 shell 友好：截断标记里的 ``expand_hint`` 会把
+    整条路径用单引号包起来交给 shell，路径内部再出现单引号就会破坏引用。
     """
     if any(ch in key for ch in ".[]'\""):
-        return f"['{key}']"
+        return f'["{key}"]'
     return f".{key}"
