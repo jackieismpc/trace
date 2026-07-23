@@ -1,0 +1,92 @@
+# tracelens 规则集示例
+#
+# 规则是**数据**不是代码：改这个文件重跑即可生效，不需要改任何代码分支。
+# 这正是 Issue「配置动态调整」要求的实现方式。
+#
+# 用法：
+#     tracelens skeleton --input trace.json --config examples/rules.toml
+#
+# ---------------------------------------------------------------------------
+# 求解语义
+# ---------------------------------------------------------------------------
+# 所有规则按 priority **降序**排序后逐条尝试，**首匹配生效**；
+# 同 priority 保持本文件里的声明顺序。
+# 没有命中任何规则的 span 取默认动作 keep（隐式保留）。
+#
+# 一条规则里的多个 match 条件是**与**关系；match 为空表示匹配一切。
+#
+# ---------------------------------------------------------------------------
+# 四种动作
+# ---------------------------------------------------------------------------
+#   keep              保留。注意：被规则**显式** keep 的节点，其到根的整条祖先链
+#                     会被强制保留——这是「我关心这个节点」的强信号。
+#   drop              删除节点自身。它的存活后代会重挂到最近存活祖先，
+#                     并在边上记 elided_depth；节点自身进入同类占位节点的计数。
+#   collapse_subtree  保留节点，但把它的整棵子树折叠成占位节点。
+#   truncate          保留节点，并按 params 截断它的大体积字段。
+#
+# ---------------------------------------------------------------------------
+# 匹配条件
+# ---------------------------------------------------------------------------
+#   name_glob    span name 的 shell 通配，如 "web_search*"
+#   kind         AGENT / MODEL / TOOL / CHAIN / RETRIEVER / PARSER /
+#                EMBEDDING / RERANKER / UNKNOWN
+#   kind_source  Explicit / Convention / Heuristic / Unknown
+#                （只想对「类型是猜出来的」节点特殊处理时用）
+#   status       OK / ERROR / UNSET
+#   min_bytes / max_bytes   span 原文字节数区间
+#   min_depth / max_depth   树深度区间（根为 0）
+#
+# ---------------------------------------------------------------------------
+# 无法关闭的硬保护
+# ---------------------------------------------------------------------------
+# 无论你怎么写规则，下面两条永远成立（写死在引擎里）：
+#   1. 根节点永不剪除；
+#   2. 任一 ERROR 节点到根的整条路径永不剪除。
+# 排查问题时最需要的就是这两样，交给配置去保证太脆弱了。
+
+
+# 1）错误现场原样保留：不截断，不折叠。
+[[rules]]
+name = "错误节点保留全文"
+action = "keep"
+priority = 100
+match = { status = "ERROR" }
+
+
+# 2）模型调用的 prompt 带全量历史，随轮次平方级膨胀，是体积的主要来源。
+#    系统指令在开头，所以用 head 策略保头部。
+[[rules]]
+name = "大体积模型调用截断输入输出"
+action = "truncate"
+priority = 50
+match = { kind = "MODEL", min_bytes = 2048 }
+params = { strategy = "head", max_chars = 200 }
+
+
+# 3）工具输出常常开头是格式说明、结尾是结论，两头都要保。
+[[rules]]
+name = "大体积工具输出两端保留"
+action = "truncate"
+priority = 50
+match = { kind = "TOOL", min_bytes = 2048 }
+params = { strategy = "head_tail", max_chars = 200 }
+
+
+# 4）体积小又成功的重试型工具调用，通常没有排查价值，直接折叠成占位节点。
+#    注意它们不会「消失」：占位节点会显示 “elided N similar TOOL spans”，
+#    守恒律保证节点数对得上。
+[[rules]]
+name = "折叠小体积成功工具调用"
+action = "drop"
+priority = 20
+match = { kind = "TOOL", status = "OK", max_bytes = 512, min_depth = 2 }
+
+
+# 5）兜底：其余大体积节点统一截断，避免任何单个字段撑爆骨架。
+[[rules]]
+name = "其余大体积节点统一截断"
+action = "truncate"
+priority = 10
+match = { min_bytes = 2048 }
+params = { strategy = "head", max_chars = 200 }

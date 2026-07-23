@@ -33,6 +33,7 @@ dev = [
     "syrupy>=4.6",
     "ruff>=0.6",
     "mypy>=1.11",
+    "regex>=2026.7.19",
 ]
 
 [build-system]
