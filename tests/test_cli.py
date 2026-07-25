@@ -76,6 +76,18 @@ def test_skeleton_emits_index(tmp_path: Path) -> None:
     assert idx.is_file() and idx.read_bytes().startswith(b"TLNS")
 
 
+def test_skeleton_chars_per_token_reaches_estimate(tmp_path: Path) -> None:
+    """--chars-per-token 必须一路传到 token 估算，否则就是个静默失效的开关。"""
+    lo = tmp_path / "lo.txt"
+    hi = tmp_path / "hi.txt"
+    assert main(["skeleton", "--input", MLFLOW, "--chars-per-token", "1.0", "--out", str(lo)]) == 0
+    assert main(["skeleton", "--input", MLFLOW, "--chars-per-token", "8.0", "--out", str(hi)]) == 0
+    assert "chars/token=1.0" in lo.read_text(encoding="utf-8")
+    n_lo = int(lo.read_text(encoding="utf-8").split("token 估算：")[1].split("（")[0])
+    n_hi = int(hi.read_text(encoding="utf-8").split("token 估算：")[1].split("（")[0])
+    assert n_lo > n_hi  # 系数越小，估出的 token 越多
+
+
 def test_skeleton_with_example_config(tmp_path: Path) -> None:
     """示例配置能被 CLI 直接吃下——文档里的命令必须真的能跑。"""
     config = Path(__file__).parents[1] / "examples" / "rules.toml"

@@ -301,6 +301,31 @@ def test_cycle_is_broken() -> None:
     assert set(depths) == {"0001", "0002"}
 
 
+def test_longer_cycle_does_not_blow_up() -> None:
+    """三节点环：断边提升为根，且不触发逐字段 __eq__ 在 children 上的无限递归。
+
+    节点按身份比较（SpanNode eq=False），成环也不会让 `node in siblings`
+    递归到栈溢出——这条用例把这个保证钉死。
+    """
+    spans = [
+        _make_span(1, 3, SpanKind.TOOL, Status.OK, 10),
+        _make_span(2, 1, SpanKind.TOOL, Status.OK, 10),
+        _make_span(3, 2, SpanKind.TOOL, Status.OK, 10),
+    ]
+    roots, _nodes = build_forest(spans)
+    depths = compute_depths(roots)
+    assert set(depths) == {"0001", "0002", "0003"}
+
+
+def test_span_node_uses_identity_equality() -> None:
+    """字段值相同的两个节点不相等——身份比较是拓扑定位的正确语义。"""
+    m = _make_span(1, None, SpanKind.TOOL, Status.OK, 10)
+    n1, n2 = SpanNode(meta=m), SpanNode(meta=m)
+    assert n1 != n2
+    assert n1 == n1
+    assert n1 in [n1] and n1 not in [n2]
+
+
 def test_rebuild_does_not_mutate_input() -> None:
     """rebuild 产出新树，原始森林保持可用（供交叉验证）。"""
     spans = [

@@ -42,6 +42,7 @@ def _cmd_skeleton(args: argparse.Namespace) -> int:
             "max_tokens": args.max_tokens,
             "strict_grapheme": True if args.strict_grapheme else None,
             "exact_tokens": True if args.exact_tokens else None,
+            "chars_per_token": args.chars_per_token,
         },
     )
 
@@ -58,7 +59,11 @@ def _cmd_skeleton(args: argparse.Namespace) -> int:
 
         renderer = _RENDERERS[config.format]
         skeleton, text = fit_to_budget(
-            skeleton, renderer, config.max_tokens, exact=config.exact_tokens
+            skeleton,
+            renderer,
+            config.max_tokens,
+            exact=config.exact_tokens,
+            chars_per_token=config.chars_per_token,
         )
 
         if args.emit_index:
@@ -231,6 +236,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_skel.add_argument("--detach", help="把每个 span 的原文物化到该目录（应对文件轮转）")
     p_skel.add_argument("--strict-grapheme", action="store_true", help="按 grapheme cluster 截断")
     p_skel.add_argument("--exact-tokens", action="store_true", help="用 tiktoken 精确计数")
+    p_skel.add_argument(
+        "--chars-per-token", type=float, help="token 估算系数（默认 4.0；--exact-tokens 时不生效）"
+    )
     p_skel.set_defaults(func=_cmd_skeleton)
 
     p_exp = sub.add_parser("expand", help="按 span_id 展开原始 Payload")

@@ -148,7 +148,11 @@ class TraceDoc:
         return Status.OK
 
 
-@dataclass(slots=True)
+# eq=False：节点按**对象身份**比较，不按字段值。
+# 拓扑阶段用 `node in siblings` / `siblings.remove(node)` 定位节点，靠的就是身份；
+# 且树里可能出现成环的脏数据，逐字段的 `__eq__` 会在 children 上无限递归。
+# 身份比较既是正确语义，也回避了这个隐患。
+@dataclass(slots=True, eq=False)
 class SpanNode:
     """剪枝阶段使用的树节点，包裹 `SpanMeta` 并携带剪枝产生的附加信息。"""
 

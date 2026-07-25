@@ -22,7 +22,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from ..model import Skeleton, SpanKind, SpanNode, Status, TruncationMark
-from ..tokens import count_tokens
+from ..tokens import DEFAULT_CHARS_PER_TOKEN, count_tokens
 from .tree import MARK_ELIDED
 
 __all__ = ["fit_to_budget", "PRESSURE_LEVELS"]
@@ -202,18 +202,20 @@ def fit_to_budget(
     renderer: Callable[[Skeleton], str],
     max_tokens: int | None,
     exact: bool = False,
+    chars_per_token: float = DEFAULT_CHARS_PER_TOKEN,
 ) -> tuple[Skeleton, str]:
     """把骨架压进 token 预算，返回 ``(最终骨架, 渲染文本)``。
 
     :param renderer: 渲染函数，预算是按**渲染后的文本**算的
     :param max_tokens: 预算；None 表示不限
     :param exact: 用 tiktoken 精确计数（需 ``[tokens]`` extra）
+    :param chars_per_token: 估算系数；`exact=True` 时不生效（tiktoken 精确计数）
 
     达不到预算时不会假装成功：返回压到最紧的版本，并在骨架说明里写清
     「已压到最紧仍超预算」——保底集不可再剪是硬约束。
     """
     text = renderer(skeleton)
-    est = count_tokens(text, exact=exact)
+    est = count_tokens(text, exact=exact, chars_per_token=chars_per_token)
     if max_tokens is None:
         skeleton.notes.append(f"token 估算：{est.tokens}（方法：{est.method}）")
         return skeleton, renderer(skeleton)
@@ -227,7 +229,7 @@ def fit_to_budget(
     for level in range(1, PRESSURE_LEVELS + 1):
         candidate = _apply_pressure(skeleton, level)
         text = renderer(candidate)
-        cur = count_tokens(text, exact=exact)
+        cur = count_tokens(text, exact=exact, chars_per_token=chars_per_token)
         last, last_est = candidate, cur
         if cur.tokens <= max_tokens:
             candidate.notes.append(

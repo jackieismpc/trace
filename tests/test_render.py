@@ -236,6 +236,32 @@ def test_exact_falls_back_honestly() -> None:
     assert "tiktoken" in est.method or "已回退" in est.method
 
 
+def test_fit_to_budget_respects_chars_per_token() -> None:
+    """chars_per_token 必须真正影响估算——否则它就是个静默失效的配置项。"""
+    skeleton = _fixture_skeleton()
+    _s1, text1 = fit_to_budget(_clone_for_budget(skeleton), render_tree, None, chars_per_token=4.0)
+    _s2, text2 = fit_to_budget(_clone_for_budget(skeleton), render_tree, None, chars_per_token=1.0)
+    # 系数越小，同样文本估出的 token 越多；两条 note 里的数字必须不同
+    n1 = int(text1.split("token 估算：")[1].split("（")[0])
+    n2 = int(text2.split("token 估算：")[1].split("（")[0])
+    assert n2 > n1
+    assert "chars/token=1.0" in text2
+
+
+def _clone_for_budget(skeleton: Skeleton) -> Skeleton:
+    """给预算测试一份干净的骨架副本（fit_to_budget 会往 notes 里追加）。"""
+    return Skeleton(
+        trace_id=skeleton.trace_id,
+        roots=skeleton.roots,
+        original_span_count=skeleton.original_span_count,
+        kept_span_count=skeleton.kept_span_count,
+        status=skeleton.status,
+        duration_ns=skeleton.duration_ns,
+        source_file=skeleton.source_file,
+        source_size=skeleton.source_size,
+    )
+
+
 # ---- 预算收紧 -------------------------------------------------------------
 
 
