@@ -181,8 +181,6 @@ uv run python scripts/blind_bug_fixture.py out/blind_trace.json out/blind_answer
 - [使用指南](docs/使用指南.md)
 - [架构说明](docs/架构.md)
 - [验证报告](docs/验证报告.md)（信息可达性自验 + 真实 Agent 盲测 + 性能 + 质量）
-- [局限性与改进方向](docs/局限性.md)
-- [实施方案（v4）](实施方案-Trace骨架生成与按需展开-v4-Python.md)
 
 ## 许可证
 
