@@ -6,8 +6,10 @@
 给定预算，渲染前估算骨架体积，超预算则**按既定次序逐级增压**：
 
     1. 先收紧截断阈值（预览留得更短）
-    2. 再折叠同类兄弟
-    3. 再压缩展示深度
+    2. 再折叠同类兄弟——但**渐进**收紧：先只折 ≥20 的大组、再 ≥8、≥3、≥2，
+       避免上一版从「完全不折」一步跳到「全折」造成的预算过冲；
+       折叠时保留一个代表节点，让读者看到被折内容的真实样例
+    3. 最后再压缩展示深度
 
 直到达标，或触及**保底集**（根节点 + ERROR 节点到根的整条路径）——保底集不可
 再剪。这让「骨架一定装得进指定预算」成为可承诺的性质，Agent harness 可以放心
@@ -30,18 +32,28 @@ __all__ = ["fit_to_budget", "PRESSURE_LEVELS"]
 # 增压阶梯。每一级都是「在上一级基础上再加一道」，次序即方案 §5.5 规定的次序：
 # 先收紧截断阈值 → 再降低展示详细度 → 再折叠同类兄弟 → 最后压缩展示深度。
 #
-# 每一项是 (预览字符数, 展示详细度, 是否折叠同类兄弟, 展示深度上限)。
-# 展示深度上限为 None 表示不限。
-_LADDER: list[tuple[int, int, bool, int | None]] = [
-    (120, 2, False, None),
-    (60, 2, False, None),
-    (24, 2, False, None),
-    (24, 1, False, None),
-    (24, 0, False, None),
-    (24, 0, True, None),
-    (24, 0, True, 3),
-    (24, 0, True, 2),
-    (24, 0, True, 1),
+# 每一项是 (预览字符数, 展示详细度, 折叠最小兄弟组大小, 展示深度上限)。
+#   - 折叠最小兄弟组大小为 None 表示不折叠；为整数 N 表示只折叠
+#     「同一父下、同类型、≥N 个」的兄弟组，小于 N 的组保持可见。
+#   - 折叠时保留组内第一个成员作为代表节点（真实样例），占位节点只统计其余成员。
+#   - 展示深度上限为 None 表示不限。
+#
+# 折叠档位刻意渐进（20 → 8 → 3 → 2）：上一版从「完全不折」直接跳到
+# 「全折」，在 411 span 的 Trace 上从 >8000 token 一步落到 239 token，
+# 只用了预算的 ~6%。渐进收紧让预算大时保留更多可见节点。
+_LADDER: list[tuple[int, int, int | None, int | None]] = [
+    (120, 2, None, None),
+    (60, 2, None, None),
+    (24, 2, None, None),
+    (24, 1, None, None),
+    (24, 0, None, None),
+    (24, 0, 20, None),
+    (24, 0, 8, None),
+    (24, 0, 3, None),
+    (24, 0, 2, None),
+    (24, 0, 2, 3),
+    (24, 0, 2, 2),
+    (24, 0, 2, 1),
 ]
 
 PRESSURE_LEVELS = len(_LADDER)
@@ -136,10 +148,17 @@ def _shorten_previews(node: SpanNode, max_chars: int) -> None:
         _shorten_previews(c, max_chars)
 
 
-def _collapse_siblings(node: SpanNode) -> None:
-    """把同一父节点下、同类型、且不在保底集里的兄弟合并成占位节点。"""
+def _collapse_siblings(node: SpanNode, min_group: int) -> None:
+    """把同一父节点下、同类型、且不在保底集里的兄弟合并成占位节点。
+
+    ``min_group`` 为折叠阈值：只有组内兄弟数 ≥ min_group 才折，
+    小于阈值的组保持可见——这是预算收紧的渐进档位。
+
+    折叠时保留组内第一个成员作为代表节点（连同其子树渲染，提供真实样例），
+    占位节点只统计其余成员，``elided N`` 的 N 与代表节点一起还原组内全部节点。
+    """
     for c in node.children:
-        _collapse_siblings(c)
+        _collapse_siblings(c, min_group)
 
     kept: list[SpanNode] = []
     groups: dict[SpanKind, list[SpanNode]] = {}
@@ -150,11 +169,14 @@ def _collapse_siblings(node: SpanNode) -> None:
         groups.setdefault(child.meta.kind, []).append(child)
 
     for kind, members in groups.items():
-        if len(members) < 2:
+        if len(members) < min_group:
             kept.extend(members)
             continue
-        total = sum(_subtree_size(m) for m in members)
-        kept.append(_placeholder(kind, total, all_ok=True))
+        rep, *rest = members
+        kept.append(rep)
+        rest_total = sum(_subtree_size(m) for m in rest)
+        if rest_total > 0:
+            kept.append(_placeholder(kind, rest_total, all_ok=True))
     node.children = kept
 
 
@@ -184,13 +206,13 @@ def _apply_pressure(skeleton: Skeleton, level: int) -> Skeleton:
     if level <= 0:
         return out
 
-    preview_chars, detail, collapse, depth_limit = _LADDER[min(level, len(_LADDER)) - 1]
+    preview_chars, detail, min_group, depth_limit = _LADDER[min(level, len(_LADDER)) - 1]
     out.detail = detail
     for r in out.roots:
         _shorten_previews(r, preview_chars)
-    if collapse:
+    if min_group is not None:
         for r in out.roots:
-            _collapse_siblings(r)
+            _collapse_siblings(r, min_group)
     if depth_limit is not None:
         for r in out.roots:
             _limit_depth(r, 0, depth_limit)

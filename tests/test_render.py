@@ -25,6 +25,7 @@ from tracelens.model import (
 from tracelens.prune.engine import prune
 from tracelens.prune.rules import DEFAULT_RULESET, Action, Match, Rule, RuleSet, TruncateParams
 from tracelens.render import fit_to_budget, render, render_json, render_md, render_tree
+from tracelens.render.budget import _apply_pressure
 from tracelens.render.jsonout import SCHEMA_VERSION, skeleton_to_dict
 from tracelens.render.tree import MARK_ELIDED, MARK_HEURISTIC, MARK_TRUNCATED, format_bytes
 from tracelens.testkit import SynthConfig, build_mlflow_trace
@@ -331,3 +332,67 @@ def test_budget_preserves_expand_hints() -> None:
     for node in fitted.all_nodes():
         for m in node.truncated_fields:
             assert m.digest.startswith("blake2b:")
+
+
+def _sibling_heavy_skeleton() -> Skeleton:
+    """根下有 30 个 TOOL 兄弟 + 5 个 MODEL 兄弟的合成骨架（全部 OK）。"""
+
+    def span(i: int, parent: int | None, kind: SpanKind) -> SpanMeta:
+        return SpanMeta(
+            span_id=f"{i:04x}",
+            parent_id=None if parent is None else f"{parent:04x}",
+            trace_id="t",
+            name=f"n{i}",
+            kind=kind,
+            kind_source=KindSource.EXPLICIT,
+            status=Status.OK,
+            raw_range=ByteRange(0, 100),
+        )
+
+    root = SpanNode(meta=span(0, None, SpanKind.AGENT))
+    root.children = [SpanNode(meta=span(i, 0, SpanKind.TOOL)) for i in range(1, 31)]
+    root.children += [SpanNode(meta=span(i, 0, SpanKind.MODEL)) for i in range(31, 36)]
+    return Skeleton(
+        trace_id="t",
+        roots=[root],
+        original_span_count=36,
+        kept_span_count=36,
+    )
+
+
+def test_budget_collapse_is_gradual() -> None:
+    """折叠档位渐进：小兄弟组在早期档位保持可见，只有大组被折。"""
+    skeleton = _sibling_heavy_skeleton()
+
+    # 第 6 级（min_group=20）：30 个 TOOL 折成 1 代表 + 占位，5 个 MODEL 全部可见
+    level6 = _apply_pressure(skeleton, 6)
+    level6_ids = {n.meta.span_id for n in level6.all_nodes() if not n.collapsed}
+    assert "0001" in level6_ids  # TOOL 代表（组内第一个成员）
+    assert not any(n.collapsed for n in level6.all_nodes() if n.meta.kind is SpanKind.MODEL)
+    tool_placeholders = [
+        n for n in level6.all_nodes() if n.collapsed and n.collapsed_kind is SpanKind.TOOL
+    ]
+    assert len(tool_placeholders) == 1 and tool_placeholders[0].collapsed_count == 29
+
+    # 第 8 级（min_group=3）：5 个 MODEL 也被折成 1 代表 + 占位
+    level8 = _apply_pressure(skeleton, 8)
+    level8_model_visible = [
+        n for n in level8.all_nodes() if not n.collapsed and n.meta.kind is SpanKind.MODEL
+    ]
+    assert len(level8_model_visible) == 1 and level8_model_visible[0].meta.span_id == "001f"
+    model_placeholders = [
+        n for n in level8.all_nodes() if n.collapsed and n.collapsed_kind is SpanKind.MODEL
+    ]
+    assert len(model_placeholders) == 1 and model_placeholders[0].collapsed_count == 4
+
+
+def test_budget_collapse_keeps_representative() -> None:
+    """折叠保留一个代表节点：占位计数 + 代表 = 组内全部节点，且代表可正常渲染。"""
+    skeleton = _sibling_heavy_skeleton()
+    level6 = _apply_pressure(skeleton, 6)
+
+    to_visible = [n for n in level6.all_nodes() if not n.collapsed and n.meta.kind is SpanKind.TOOL]
+    assert len(to_visible) == 1 and to_visible[0].meta.span_id == "0001"
+    text = render_tree(level6)
+    assert "n1" in text  # 代表节点渲染出来
+    assert "elided 29 similar TOOL spans" in text  # 占位只统计其余成员
