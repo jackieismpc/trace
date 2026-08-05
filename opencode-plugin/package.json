@@ -1,0 +1,34 @@
+{
+  "name": "@tracelens/opencode-plugin",
+  "version": "0.1.0",
+  "description": "opencode 插件：会话空闲时自动把模型输出与工具调用导出为标准 MLflow 格式 trace.json，供 tracelens 处理",
+  "type": "module",
+  "main": "dist/plugin.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/plugin.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.18.13",
+    "@opencode-ai/sdk": "^1.18.13",
+    "@types/node": "^22",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "license": "Mulan PSL v2",
+  "keywords": [
+    "opencode",
+    "plugin",
+    "trace",
+    "mlflow",
+    "observability",
+    "tracelens"
+  ]
+}

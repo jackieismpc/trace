@@ -78,6 +78,33 @@ jobs:
           assert raw in open('out/demo_trace.json','rb').read(), '字节级一致性被破坏'
           print('字节级一致性校验通过：', len(raw), '字节')"
 
+  plugin:
+    # opencode 采集插件（方案 A）：类型检查 → 构建 → 单测，并闭环校验产出样本可被 tracelens 处理
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 安装插件依赖
+        run: npm ci
+        working-directory: opencode-plugin
+
+      - name: 类型检查与构建
+        run: |
+          npm run typecheck
+          npm run build
+        working-directory: opencode-plugin
+
+      - name: 插件单测（builder/serializer）
+        run: npm test
+        working-directory: opencode-plugin
+
+      - uses: astral-sh/setup-uv@v5
+      - name: 闭环：插件样本可被 tracelens 全流程处理
+        run: uv sync --dev && uv run pytest tests/test_opencode_plugin_trace.py -q
+
   package:
     runs-on: ubuntu-latest
     steps:

@@ -27,3 +27,7 @@ htmlcov/
 *.idx
 /out/
 /tmp/
+
+# opencode 采集插件（Node/TS）
+node_modules/
+dist/

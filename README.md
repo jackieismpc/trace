@@ -65,6 +65,25 @@ trace 4bf92f35  status=ERROR  spans=411→29  dur=48.2s
 三个符号各占 1 token 但信息量很大。注意 `expand:` 那一行——**取回的方法直接写在
 数据里**，Agent 不需要额外的 system prompt 教它怎么展开。
 
+## 采集：opencode 插件（方案 A）
+
+tracelens 不只是读 trace，还能**自动采集**。仓库内的
+[`opencode-plugin/`](opencode-plugin/README.md) 是一个零运行时依赖的 opencode 插件：
+每次会话空闲时，自动把模型输出与工具调用导出为标准 MLflow 格式的 `trace.json`，随后即可接入
+上面的 `inspect / skeleton / expand`。
+
+```bash
+cd opencode-plugin && npm install && npm run build
+mkdir -p ~/.config/opencode/plugins
+cp dist/plugin.js ~/.config/opencode/plugins/tracelens.js   # 单文件即插即用
+
+# 之后跑完任意 opencode 会话，会生成 <项目>/.tracelens/traces/<会话>.trace.json
+tracelens inspect --input .tracelens/traces/会话标题.trace.json
+```
+
+采集层的 span 映射：会话 → 根 `AGENT` span；每个 assistant 消息 → `LLM` span（一轮）；
+该轮内工具调用 → `TOOL` span（出错即 `status_code=ERROR` + `status_message`）。
+
 ## 四条设计承诺
 
 **① 还原的 Payload 与原始数据逐字节一致，且这是构造性的。**

@@ -1,0 +1,113 @@
+{
+  "info": {
+    "request_id": "opencode:ses_sample001",
+    "trace_id": "0000000000000001",
+    "execution_time_ms": 90000
+  },
+  "data": {
+    "spans": [
+      {
+        "name": "opencode:营收查询 fixture 会话",
+        "context": {
+          "trace_id": "0000000000000001",
+          "span_id": "0000000000000002"
+        },
+        "parent_id": null,
+        "start_time": 1750000000000000000,
+        "end_time": 1750000090000000000,
+        "status_code": "OK",
+        "status_message": "",
+        "attributes": {
+          "mlflow.spanType": "\"AGENT\"",
+          "mlflow.spanInputs": "{\"task\":\"2025 年 Q3 的营收是多少？按业务线拆分。\"}",
+          "mlflow.spanOutputs": "{\"answer\":\"最终：企业级约 45%，云服务约 30%。\"}"
+        }
+      },
+      {
+        "name": "turn_1",
+        "context": {
+          "trace_id": "0000000000000001",
+          "span_id": "0000000000000003"
+        },
+        "parent_id": "0000000000000002",
+        "start_time": 1750000010000000000,
+        "end_time": 1750000030000000000,
+        "status_code": "OK",
+        "status_message": "",
+        "attributes": {
+          "mlflow.spanType": "\"LLM\"",
+          "mlflow.spanInputs": "{\"messages\":[{\"role\":\"user\",\"content\":\"2025 年 Q3 的营收是多少？按业务线拆分。\"}],\"model\":\"mydeepseek/deepseek-v4-flash\"}",
+          "mlflow.spanOutputs": "{\"content\":\"我先查一下数仓数据。\",\"reasoning\":\"我先尝试查询数仓，再按业务线拆分。\"}"
+        }
+      },
+      {
+        "name": "bash: python3 -c 'print(\"ok\")'",
+        "context": {
+          "trace_id": "0000000000000001",
+          "span_id": "0000000000000004"
+        },
+        "parent_id": "0000000000000003",
+        "start_time": 1750000015000000000,
+        "end_time": 1750000020000000000,
+        "status_code": "OK",
+        "status_message": "",
+        "attributes": {
+          "mlflow.spanType": "\"TOOL\"",
+          "mlflow.spanInputs": "{\"command\":\"python3 -c 'print(\\\"ok\\\")'\"}",
+          "mlflow.spanOutputs": "\"ok\\n\""
+        }
+      },
+      {
+        "name": "turn_2",
+        "context": {
+          "trace_id": "0000000000000001",
+          "span_id": "0000000000000005"
+        },
+        "parent_id": "0000000000000002",
+        "start_time": 1750000040000000000,
+        "end_time": 1750000060000000000,
+        "status_code": "OK",
+        "status_message": "",
+        "attributes": {
+          "mlflow.spanType": "\"LLM\"",
+          "mlflow.spanInputs": "{\"messages\":[{\"role\":\"user\",\"content\":\"2025 年 Q3 的营收是多少？按业务线拆分。\"}],\"model\":\"mydeepseek/deepseek-v4-flash\"}",
+          "mlflow.spanOutputs": "{\"content\":\"数据库表不存在，改用公开资料估算。\",\"reasoning\":\"数仓返回错误，记录错误并改用公开资料检索。\",\"tokens\":{\"input\":200,\"output\":80,\"reasoning\":40,\"cache\":{\"read\":0,\"write\":0}}}"
+        }
+      },
+      {
+        "name": "read: /data/revenue_q3.json",
+        "context": {
+          "trace_id": "0000000000000001",
+          "span_id": "0000000000000006"
+        },
+        "parent_id": "0000000000000005",
+        "start_time": 1750000045000000000,
+        "end_time": 1750000046000000000,
+        "status_code": "ERROR",
+        "status_message": "File not found: /data/revenue_q3.json",
+        "attributes": {
+          "mlflow.spanType": "\"TOOL\"",
+          "mlflow.spanInputs": "{\"filePath\":\"/data/revenue_q3.json\"}",
+          "mlflow.spanOutputs": "\"File not found: /data/revenue_q3.json\""
+        }
+      },
+      {
+        "name": "turn_3",
+        "context": {
+          "trace_id": "0000000000000001",
+          "span_id": "0000000000000007"
+        },
+        "parent_id": "0000000000000002",
+        "start_time": 1750000080000000000,
+        "end_time": 1750000090000000000,
+        "status_code": "OK",
+        "status_message": "",
+        "attributes": {
+          "mlflow.spanType": "\"LLM\"",
+          "mlflow.spanInputs": "{\"messages\":[{\"role\":\"user\",\"content\":\"2025 年 Q3 的营收是多少？按业务线拆分。\"}],\"model\":\"mydeepseek/deepseek-v4-flash\"}",
+          "mlflow.spanOutputs": "{\"content\":\"最终：企业级约 45%，云服务约 30%。\",\"reasoning\":\"\"}"
+        }
+      }
+    ]
+  }
+}
