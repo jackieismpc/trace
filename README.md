@@ -164,24 +164,31 @@ params = { strategy = "head", max_chars = 160 }   # head / tail / head_tail
 ## 开发
 
 ```bash
-uv run pytest                                   # 190 项测试
+uv run pytest                                   # 198 项测试
 uv run pytest --cov --cov-report=term-missing   # 覆盖率（当前 92%）
 uv run ruff check . && uv run ruff format --check .
 uv run mypy                                     # strict 模式
+
+# opencode 采集插件（Node/TS）
+cd opencode-plugin && npm ci
+npm run typecheck && npm run build
+npm test                                        # vitest 10 项
 ```
 
 ## 测试
 
-三层测试，各自回答一个问题（详见[验证报告](docs/验证报告.md)）：
+测试分三类数据源、覆盖三条证据线，完整方案与实测见[测试方案](docs/测试方案.md)与
+[验证报告](docs/验证报告.md)：
 
-1. **单元 / 属性 / 快照**（`tests/`，190 项 / 92% 覆盖）——每个模块行为对不对。核心是
-   `test_topology.py` 用 hypothesis 钉死五条拓扑不变量、`test_index.py` 闭环验证字节级一致、
-   `test_cli.py` 锁定退出码语义。
-2. **脚本 demo / 基准**（`scripts/`）——端到端可达性与性能。
-   `demo_investigate.py` / `demo_control.py` 是不调 LLM 的实验/对照组；`bench_pipeline.py`
-   跑全流程性能。
-3. **真实 Agent 盲测**——把一个事先不知道 bug 的 LLM 放进回路，验证它只凭骨架 + `expand`
-   能否查出根因（对照组：把原始 JSON 截断进 128K 窗口）。
+1. **真实采集闭环（opencode 插件）**——插件在 `session.idle` 时把真实会话导出为标准
+   MLflow `trace.json`，`scripts/opencode_collect_demo.sh` 一次跑通「采集 → inspect →
+   skeleton → expand 字节级校验」。CI 中用插件确定性产出的固定样本做离线闭环
+   （`tests/test_opencode_plugin_trace.py`）。
+2. **信息可达性自验（不调 LLM）**——`demo_investigate.py`（实验组）/ `demo_control.py`
+   （对照组），论证「128K 窗口装不下、且 Agent 无法选择装哪部分」。
+3. **单元 / 属性 / 快照 + 真实 Agent 盲测**——`tests/` 198 项 / 92% 覆盖；`blind_bug_fixture.py`
+   随机密封根因，把不知情 LLM 放进回路验证「只凭骨架 + expand 能否查出根因」。
+4. **性能**——`bench_pipeline.py 200` 扫描 833 MB/s、全流程 3.2 s。
 
 ```bash
 # 信息可达性自验（不调 LLM）
@@ -193,13 +200,17 @@ uv run python scripts/bench_pipeline.py 200 # 全流程基准
 # 真实 Agent 盲测（根因随机且密封，每次运行都不同）
 uv run python scripts/blind_bug_fixture.py out/blind_trace.json out/blind_answer_key.SEALED.json
 # 把生成的骨架交给一个不知情的 Agent，让它只用 expand 查根因，再开封 SEALED 对分
+
+# 真实采集闭环（需要模型与网络）
+bash scripts/opencode_collect_demo.sh
 ```
 
 ## 文档
 
-- [使用指南](docs/使用指南.md)
-- [架构说明](docs/架构.md)
-- [验证报告](docs/验证报告.md)（信息可达性自验 + 真实 Agent 盲测 + 性能 + 质量）
+- [使用指南](docs/使用指南.md)（安装 / inspect / skeleton / expand / 规则 / 配置 / 采集）
+- [测试方案](docs/测试方案.md)（为什么测、怎么测、三类数据源三条证据线）
+- [验证报告](docs/验证报告.md)（真实采集闭环 + 信息可达性自验 + 真实 Agent 盲测 + 性能 + 质量）
+- [架构说明](docs/架构.md)（模块划分、数据流、采集层、硬约束）
 
 ## 许可证
 

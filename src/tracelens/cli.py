@@ -221,18 +221,55 @@ def build_parser() -> argparse.ArgumentParser:
     """构造参数解析器。"""
     parser = argparse.ArgumentParser(
         prog="tracelens",
-        description="Trace 骨架生成与按需展开：骨架给 Agent 读，细节按 span_id 无损取回",
+        description=(
+            "Trace 骨架生成与按需展开：把大体积 Agent Trace 拆成「可读骨架 + 字节偏移索引」，"
+            "骨架给 Agent/人读，细节凭 span_id 从原文件逐字节无损取回。"
+        ),
+        epilog=(
+            "典型工作流：\n"
+            "  # 1) 看一眼这是什么（格式、span 数、ERROR 节点）\n"
+            "  tracelens inspect --input trace.json\n"
+            "  # 2) 生成骨架 + 索引（骨架有 token 预算，读给 Agent 用）\n"
+            "  tracelens skeleton --input trace.json --format tree --max-tokens 4000 \\\n"
+            "      --out skeleton.txt --emit-index trace.idx\n"
+            "  # 3) 按需展开（span_id 支持短前缀；--field 定位到字段级；--raw 输出原始字节）\n"
+            "  tracelens expand --input trace.json --index trace.idx --span-id <span_id>\n"
+            "  tracelens expand --input trace.json --index trace.idx --span-id <span_id> \\\n"
+            "      --field '$.attributes[\"mlflow.spanOutputs\"]'\n"
+            "退出码：0 成功 / 1 输入不存在或解析失败 / 2 span_id 未命中 / "
+            "3 索引与原文件不匹配 / 4 配置非法。"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", action="version", version=f"tracelens {__version__}")
     sub = parser.add_subparsers(dest="command", required=True, metavar="<子命令>")
 
-    p_skel = sub.add_parser("skeleton", help="生成骨架与索引")
+    p_skel = sub.add_parser(
+        "skeleton",
+        help="生成骨架与索引",
+        description=(
+            "把原始 trace 压缩成「完整拓扑 + 节点类型 + 状态 + 耗时 + 截断标记」的骨架"
+            "（体积受 --max-tokens 预算约束），同时写出 span_id → 字节偏移的索引文件。"
+            "硬保护：根节点与任一 ERROR 节点到根的整条路径永远不会被剪掉。"
+        ),
+        epilog=(
+            "示例：\n"
+            "  tracelens skeleton --input trace.json --format tree --max-tokens 4000 \\\n"
+            "      --out skeleton.txt --emit-index trace.idx\n"
+            "  tracelens skeleton --input trace.json --config rules.toml --format md\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     p_skel.add_argument("--input", required=True, help="原始 trace 文件路径")
     p_skel.add_argument("--config", help="规则/配置 TOML 文件")
-    p_skel.add_argument("--format", choices=list(_RENDERERS), help="输出格式（默认 tree）")
-    p_skel.add_argument("--max-tokens", type=int, help="骨架的 token 预算，超出则逐级增压")
+    p_skel.add_argument(
+        "--format", choices=list(_RENDERERS), help="输出格式：tree / json / md（默认 tree）"
+    )
+    p_skel.add_argument(
+        "--max-tokens", type=int, help="骨架的 token 预算，超出则逐级增压（裁剪/折叠）"
+    )
     p_skel.add_argument("--out", help="骨架输出文件；不给则打到 stdout")
-    p_skel.add_argument("--emit-index", help="同时写出字节偏移索引文件")
+    p_skel.add_argument("--emit-index", help="同时写出字节偏移索引文件（expand 需要）")
     p_skel.add_argument("--detach", help="把每个 span 的原文物化到该目录（应对文件轮转）")
     p_skel.add_argument("--strict-grapheme", action="store_true", help="按 grapheme cluster 截断")
     p_skel.add_argument("--exact-tokens", action="store_true", help="用 tiktoken 精确计数")
@@ -241,7 +278,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_skel.set_defaults(func=_cmd_skeleton)
 
-    p_exp = sub.add_parser("expand", help="按 span_id 展开原始 Payload")
+    p_exp = sub.add_parser(
+        "expand",
+        help="按 span_id 展开原始 Payload",
+        description=(
+            "按 span_id 从原文件逐字节取回一个 span 的原文（可精确到字段级），"
+            "中间无解析与再序列化——取回内容与原文件逐字节一致。"
+        ),
+        epilog=(
+            "示例：\n"
+            "  tracelens expand --input trace.json --index trace.idx --span-id a3f2c1\n"
+            "  tracelens expand --input trace.json --index trace.idx --span-id a3f2c1 \\\n"
+            "      --field '$.attributes[\"mlflow.spanOutputs\"]'\n"
+            "  tracelens expand --input trace.json --index trace.idx \\\n"
+            "      --span-id a3f2c1 --raw > span.json\n"
+            "原文件不在场时（已 --detach 物化）：\n"
+            "  tracelens expand --index trace.idx --span-id a3f2c1 --detach /path/to/detached\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     p_exp.add_argument("--input", help="原始 trace 文件路径（用 --detach 时可省略）")
     p_exp.add_argument("--index", required=True, help="索引文件路径")
     p_exp.add_argument("--span-id", required=True, help="span_id，支持短前缀")
@@ -251,7 +306,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_exp.add_argument("--detach", help="从 --detach 物化目录读取，而不是原文件")
     p_exp.set_defaults(func=_cmd_expand)
 
-    p_ins = sub.add_parser("inspect", help="格式嗅探与 Trace 统计")
+    p_ins = sub.add_parser(
+        "inspect",
+        help="格式嗅探与 Trace 统计",
+        description=(
+            "判定 trace 的格式（MLflow / OTLP），打印 span 数、类型分布、整体状态，"
+            "并列出全部 ERROR 节点（span_id + 名称 + 错误消息）——排查的第一步。"
+        ),
+        epilog="示例：\n  tracelens inspect --input trace.json",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     p_ins.add_argument("--input", required=True, help="原始 trace 文件路径")
     p_ins.set_defaults(func=_cmd_inspect)
 
